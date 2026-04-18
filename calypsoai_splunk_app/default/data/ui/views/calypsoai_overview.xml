@@ -1,0 +1,88 @@
+<dashboard version="1.1" theme="light">
+  <label>CalypsoAI - GenAI Security Overview</label>
+  <description>Reusable dashboard for CalypsoAI event monitoring.</description>
+  <fieldset submitButton="false">
+    <input type="time" token="tok_time">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="tok_index" searchWhenChanged="true">
+      <label>Index</label>
+      <default>main</default>
+    </input>
+    <input type="text" token="tok_sources" searchWhenChanged="true">
+      <label>Sources (SPL expression)</label>
+      <default>(source="calypsoai" OR source="f5-calypso-SIQ")</default>
+    </input>
+  </fieldset>
+
+  <row>
+    <panel>
+      <title>Total Events</title>
+      <single>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | stats count AS total_events</query>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Failed Scanner Events</title>
+      <single>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | spath | eval scanner_outcome=coalesce(scanner_outcome, 'event.scanner_outcome') | where lower(scanner_outcome)="fail" OR lower(scanner_outcome)="failed" | stats count AS failed_events</query>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Failure Rate %</title>
+      <single>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | spath | eval scanner_outcome=coalesce(scanner_outcome, 'event.scanner_outcome') | eval is_failed=if(lower(scanner_outcome)="fail" OR lower(scanner_outcome)="failed",1,0) | stats count AS total sum(is_failed) AS failed | eval failure_rate=round((failed/total)*100,2)</query>
+        </search>
+      </single>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Event Volume Over Time</title>
+      <chart>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | timechart span=15m count AS events</query>
+        </search>
+        <option name="charting.chart">line</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Scanner Outcome Distribution</title>
+      <chart>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | spath | eval scanner_outcome=coalesce(scanner_outcome, 'event.scanner_outcome', "unknown") | stats count by scanner_outcome | sort - count</query>
+        </search>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Top Event Types</title>
+      <table>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | spath | eval event_type=coalesce(event_type, 'event.event_type', "unknown") | stats count by event_type | sort - count | head 20</query>
+        </search>
+      </table>
+    </panel>
+    <panel>
+      <title>Projects With Most Failures</title>
+      <table>
+        <search>
+          <query>index=$tok_index$ $tok_sources$ sourcetype=calypsoai earliest=$tok_time.earliest$ latest=$tok_time.latest$ | spath | eval project_id=coalesce(project_id, 'event.project_id', "unknown") | eval scanner_outcome=coalesce(scanner_outcome, 'event.scanner_outcome', "unknown") | eval is_failed=if(lower(scanner_outcome)="fail" OR lower(scanner_outcome)="failed",1,0) | stats count AS total_events sum(is_failed) AS failed_events by project_id | sort - failed_events | head 20</query>
+        </search>
+      </table>
+    </panel>
+  </row>
+</dashboard>

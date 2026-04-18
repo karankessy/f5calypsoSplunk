@@ -1,0 +1,12 @@
+[]
+access = read : [ * ], write : [ admin, power ]
+export = system
+
+[views/calypsoai_overview]
+access = read : [ * ], write : [ admin, power ]
+
+[savedsearches/CalypsoAI - Scanner Outcome (Last 24h)]
+access = read : [ * ], write : [ admin, power ]
+
+[savedsearches/CalypsoAI - Event Volume (Last 24h)]
+access = read : [ * ], write : [ admin, power ]
