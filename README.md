@@ -75,16 +75,4 @@ curl -v https://<splunk-host>:8088/services/collector/health
 
 If Splunk Cloud is required, coordinate chain/trust validation with both Splunk Cloud support and Calypso support.
 
-## GitHub Push Workflow
 
-```bash
-git add calypsoai_splunk_app CALYPSO_SPLUNK_RUNBOOK.md
-git commit -m "Add reusable CalypsoAI Splunk parser and dashboard app"
-git push
-```
-
-## Notes
-
-- HEC tokens are not included in this repo by design.
-- If using a non-`main` index, update dashboard searches or use the index input token in the dashboard.
-- Keep examples generic when contributing changes so the repo remains reusable across environments.
