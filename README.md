@@ -1,5 +1,7 @@
 # CalypsoAI Splunk App (Reusable)
 
+![Calypso Splunk Overview](calypsoai_splunk_app/f5CalypsoSplunk.png)
+
 This app contains reusable parser and dashboard configuration for CalypsoAI logs ingested through Splunk HEC.
 
 ## Privacy/Sanitization Rule
